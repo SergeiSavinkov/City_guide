@@ -44,10 +44,11 @@
 ## How to Use
 
 - Enter the city name in the input field.
-- Click `Search` (or press Enter) to display information.
+- Click `Search` to display information.
 - Click `Save` to add the current city to your favorites.
 - View your saved cities via the `Favorites` button.
 - Use the `Clear` button to clear the output area.
+- Click `Exit` to exit the program
 
 ## Architecture Overview
 
