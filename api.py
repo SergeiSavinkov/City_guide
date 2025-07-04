@@ -4,11 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+# Получение погоду по названию города
 class WeatherAPI:
     API_KEY = os.getenv("OPEN_WEATHER_KEY")
 
     @classmethod
+    # Возвращает температуру, описание погоды и код страны для указанного города
     def get_weather(cls, city):
         try:
             response = requests.get(
@@ -30,9 +31,10 @@ class WeatherAPI:
         except Exception as e:
             raise Exception(f"Weather error: {str(e)}")
 
-
+# Получает информацию о стране по её коду (например, RU, GB)
 class CountryAPI:
     @classmethod
+    # Возвращает название страны, валюту и регион, используя сервис restcountries.com
     def get_info(cls, country_code):
         try:
             response = requests.get(
@@ -54,9 +56,10 @@ class CountryAPI:
                 'region': 'Unknown'
             }
 
-
+# Получает курс валюты к доллару США
 class CurrencyAPI:
     @classmethod
+    # Возвращает курс указанной валюты к USD через сервис exchangerate-api.com
     def get_rate(cls, base_currency):
         if not base_currency:
             return 0.0, "No currency"

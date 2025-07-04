@@ -1,8 +1,14 @@
+import os
+
 from textual.app import App, ComposeResult
 from textual.widgets import Button, Input, Static, Header, Footer
 from textual.containers import Vertical, Horizontal
 from api import WeatherAPI, CountryAPI, CurrencyAPI
 from storage import FavoritesManager
+from geo import get_lat_lon
+
+import folium
+import webbrowser
 
 class CityGuideApp(App):
     CSS = """
@@ -48,8 +54,9 @@ class CityGuideApp(App):
                 Button("Search", id="search", variant="primary"),
                 Button("Favorites", id="favorites"),
                 Button("Save", id="save", variant="success"),
+                Button("Show Map", id="show_map", variant="primary"),
                 Button("Clear", id="clear", variant="error"),
-                Button("Exit", id="exit", variant="error"),  # основная кнопка выхода
+                Button("Exit", id="exit", variant="error"),
             ),
             Static("", id="output"),
         )
@@ -83,8 +90,10 @@ class CityGuideApp(App):
             else:
                 output.update("⚠️ No city to save. Please search first.")
                 output.add_class("error")
+        elif button_id == "show_map":
+            await self.show_map()
         elif button_id == "exit":
-            self.exit()  # мгновенный выход без подтверждений
+            self.exit()
 
     async def search_city(self):
         city = self.query_one("#city_input").value.strip()
@@ -113,6 +122,46 @@ class CityGuideApp(App):
             output.update(f"❌ Error: {str(e)}")
             output.add_class("error")
             self.current_city = None
+
+    async def show_map(self):
+        output = self.query_one("#output")
+        favorites = self.favorites.load()
+        if not favorites:
+            output.update("⚠️ No favorite cities to map.")
+            output.add_class("error")
+            return
+
+        coords = []
+        for city in favorites:
+            try:
+                lat, lon = get_lat_lon(city)
+                if lat is not None and lon is not None:
+                    coords.append((city, lat, lon))
+            except Exception:
+                continue
+
+        if not coords:
+            output.update("❌ Could not get coordinates for any favorites.")
+            output.add_class("error")
+            return
+
+        map_ = folium.Map(location=[coords[0][1], coords[0][2]], zoom_start=2)
+        for city, lat, lon in coords:
+            folium.Marker([lat, lon], tooltip=city).add_to(map_)
+
+        map_path = "favorites_map.html"
+        map_.save(map_path)
+
+        try:
+            fullpath = f"file://{os.path.abspath(map_path)}"
+            webbrowser.open(fullpath)
+            output.update("🖼 The map is opened in the browser. If the window does not appear, open the file manually:\n" + fullpath)
+        except Exception as e:
+            output.update(f"🌐 Map HTML saved, could not open in browser: {e}\nOpen the map manually if you see the link below.")
+            output.add_class("error")
+            fullpath = os.path.abspath(map_path)
+            url = f"file://{fullpath}"
+            output.update(output.renderable + f"\n{url}")
 
     async def on_input_submitted(self, event):
         pass
