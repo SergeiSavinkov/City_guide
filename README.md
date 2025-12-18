@@ -1,6 +1,6 @@
 # City Guide
 
-**City Guide** is an interactive Python TUI application that lets you check the current weather, basic country information, and currency rate for any chosen city—and save your favorite cities locally.
+**City Guide** is an interactive Python TUI application that lets you check the current weather, basic country information, and currency rate for any chosen city - and save your favorite cities locally.
 
 ## Features
 
